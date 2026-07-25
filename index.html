@@ -442,7 +442,7 @@
 // ==================== CONEXIÓN AL WEB APP ====================
 // Pegá acá la URL que te dio "Implementar > Nueva implementación"
 // (termina en /exec).
-const API_URL = "https://script.google.com/macros/s/AKfycbxGlsz3gairHxkkO42lZTMUCl9lRkVecflQhoTnPEibYNScbntraiu4RnyhObIGlAdf/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbw5C8SlmZm6xewQSCV8EZh5zR9MYu0VdusMo-kCb8R4seIuAWV1Hxd04CSk00QbVaQYZw/exec";
 
 async function fetchJSON(params){
   const url = API_URL + "?" + new URLSearchParams(params).toString();
@@ -586,16 +586,47 @@ function estadoClass(estado){
          estado.toLowerCase()==="bloqueado" ? "bloqueado" : "pendiente";
 }
 
+// ---------------- Helper: desplegable de áreas con opción "agregar nueva" ----------------
+function poblarSelectArea(selectId, nuevaInputId, areas){
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = areas.map(a=>`<option value="${a}">${a}</option>`).join("")
+    + `<option value="__nueva__">+ Agregar área nueva</option>`;
+
+  sel.addEventListener("change", ()=>{
+    const nuevaInput = document.getElementById(nuevaInputId);
+    if(sel.value === "__nueva__"){
+      nuevaInput.style.display = "block";
+      nuevaInput.focus();
+    } else {
+      nuevaInput.style.display = "none";
+      nuevaInput.value = "";
+    }
+  });
+}
+
+function obtenerAreaSeleccionada(selectId, nuevaInputId){
+  const sel = document.getElementById(selectId);
+  if(sel.value === "__nueva__"){
+    return document.getElementById(nuevaInputId).value.trim();
+  }
+  return sel.value;
+}
+
 // ---------------- Panel Empleado ----------------
 async function renderEmpleadoPanel(){
   const main = document.getElementById("mainContent");
   main.innerHTML = `<p class="empty-note">Cargando tus tareas...</p>`;
 
   let misTareas = [];
+  let areas = [];
   try {
-    const data = await fetchJSON({ accion: "tareas", responsable: currentUser.nombre });
-    if(!data.ok) throw new Error(data.error);
-    misTareas = data.datos;
+    const [dataTareas, dataAreas] = await Promise.all([
+      fetchJSON({ accion: "tareas", responsable: currentUser.nombre }),
+      fetchJSON({ accion: "areas" })
+    ]);
+    if(!dataTareas.ok) throw new Error(dataTareas.error);
+    misTareas = dataTareas.datos;
+    areas = dataAreas.ok ? dataAreas.datos : [];
   } catch(err){
     main.innerHTML = `<p class="empty-note">No se pudieron cargar las tareas. Revisá la conexión con el Web App.</p>`;
     return;
@@ -620,7 +651,8 @@ async function renderEmpleadoPanel(){
           </div>
           <div class="form-field">
             <label for="f-area">Área / Proyecto</label>
-            <input type="text" id="f-area" placeholder="Ej: Ventas">
+            <select id="f-area"></select>
+            <input type="text" id="f-area-nueva" placeholder="Nombre de la nueva área" style="display:none; margin-top:8px;">
           </div>
           <div class="form-field">
             <label for="f-limite">Fecha límite</label>
@@ -634,10 +666,11 @@ async function renderEmpleadoPanel(){
   `;
 
   paintMisTareas(misTareas);
+  poblarSelectArea("f-area", "f-area-nueva", areas);
 
   document.getElementById("crearTareaBtn").addEventListener("click", async ()=>{
     const tarea = document.getElementById("f-tarea").value.trim();
-    const area = document.getElementById("f-area").value.trim();
+    const area = obtenerAreaSeleccionada("f-area", "f-area-nueva");
     const limite = document.getElementById("f-limite").value;
     if(!tarea || !area || !limite) return;
 
@@ -646,7 +679,7 @@ async function renderEmpleadoPanel(){
     try {
       const data = await fetchJSON({ accion: "crearTarea", tarea, area, limite, responsable: currentUser.nombre });
       if(!data.ok) throw new Error(data.error || "No se pudo guardar la tarea.");
-      document.getElementById("f-tarea").value=""; document.getElementById("f-area").value=""; document.getElementById("f-limite").value="";
+      document.getElementById("f-tarea").value=""; document.getElementById("f-limite").value="";
       document.getElementById("confirmEmpleado").style.display="block";
       renderEmpleadoPanel(); // recarga todo el panel con datos frescos de la hoja
     } catch(err){
@@ -703,10 +736,15 @@ async function renderJefePanel(){
   const main = document.getElementById("mainContent");
   main.innerHTML = `<p class="empty-note">Cargando el dashboard del equipo...</p>`;
 
+  let areas = [];
   try {
-    const data = await fetchJSON({ accion: "tareas" });
+    const [data, dataAreas] = await Promise.all([
+      fetchJSON({ accion: "tareas" }),
+      fetchJSON({ accion: "areas" })
+    ]);
     if(!data.ok) throw new Error(data.error);
     TAREAS = data.datos;
+    areas = dataAreas.ok ? dataAreas.datos : [];
   } catch(err){
     main.innerHTML = `<p class="empty-note">No se pudo cargar el dashboard. Revisá la conexión con el Web App.</p>`;
     return;
@@ -753,7 +791,8 @@ async function renderJefePanel(){
           </div>
           <div class="form-field">
             <label for="j-area">Área / Proyecto</label>
-            <input type="text" id="j-area" placeholder="Ej: Administración">
+            <select id="j-area"></select>
+            <input type="text" id="j-area-nueva" placeholder="Nombre de la nueva área" style="display:none; margin-top:8px;">
           </div>
           <div class="form-field">
             <label for="j-limite">Fecha límite</label>
@@ -781,11 +820,12 @@ async function renderJefePanel(){
 
   paintFullTable();
   paintCharts();
+  poblarSelectArea("j-area", "j-area-nueva", areas);
 
   document.getElementById("asignarBtn").addEventListener("click", async ()=>{
     const tarea = document.getElementById("j-tarea").value.trim();
     const responsable = document.getElementById("j-responsable").value;
-    const area = document.getElementById("j-area").value.trim();
+    const area = obtenerAreaSeleccionada("j-area", "j-area-nueva");
     const limite = document.getElementById("j-limite").value;
     if(!tarea || !area || !limite) return;
 
@@ -794,7 +834,7 @@ async function renderJefePanel(){
     try {
       const data = await fetchJSON({ accion: "crearTarea", tarea, area, limite, responsable });
       if(!data.ok) throw new Error(data.error || "No se pudo asignar la tarea.");
-      document.getElementById("j-tarea").value=""; document.getElementById("j-area").value=""; document.getElementById("j-limite").value="";
+      document.getElementById("j-tarea").value=""; document.getElementById("j-limite").value="";
       document.getElementById("confirmJefe").style.display="block";
       renderJefePanel(); // recarga todo con datos frescos de la hoja
     } catch(err){
