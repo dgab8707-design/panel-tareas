@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Tareas — Mockup Capítulo 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg: #F4F5F1;
+    --surface: #FFFFFF;
+    --ink: #1C2620;
+    --ink-soft: #5B6A62;
+    --accent: #245C4D;
+    --accent-soft: #DCE9E4;
+    --warm: #C65A2E;
+    --warm-soft: #F5E1D6;
+    --line: #DDE1DA;
+    --gold: #B08B2E;
+    --gold-soft: #F1E7CC;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  button{font-family:inherit;}
+  button:focus-visible, select:focus-visible, input:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  /* ---------- Banner de estado ---------- */
+  .demo-banner{
+    background:var(--ink);
+    color:#EFEFE9;
+    text-align:center;
+    font-size:12.5px;
+    padding:7px 12px;
+    letter-spacing:.02em;
+  }
+  .demo-banner b{color:#F1CBAE;}
+
+  /* ---------- Login ---------- */
+  .login-screen{
+    min-height:calc(100vh - 34px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    max-width:420px;
+    width:100%;
+    padding:40px 36px 32px;
+    position:relative;
+  }
+  .login-eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .login-eyebrow::before{
+    content:"";
+    width:16px; height:1px;
+    background:var(--accent);
+  }
+  .login-card h1{
+    font-size:28px;
+    font-weight:600;
+    line-height:1.15;
+    margin-bottom:6px;
+  }
+  .login-card p.sub{
+    color:var(--ink-soft);
+    font-size:14.5px;
+    margin:0 0 28px;
+    line-height:1.5;
+  }
+  .field-label{
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    display:block;
+    margin-bottom:8px;
+  }
+  select.user-select{
+    width:100%;
+    padding:13px 14px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--bg);
+    font-size:15px;
+    color:var(--ink);
+    appearance:none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235B6A62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+  }
+  .enter-btn{
+    width:100%;
+    margin-top:20px;
+    background:var(--ink);
+    color:#F4F5F1;
+    border:none;
+    border-radius:3px;
+    padding:14px;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .enter-btn:hover{background:var(--accent);}
+  .login-foot{
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px dashed var(--line);
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+
+  /* ---------- App shell ---------- */
+  .app{display:none;}
+  .app.visible{display:block;}
+  header.topbar{
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+    padding:16px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .topbar-id{display:flex; align-items:center; gap:12px;}
+  .avatar-tab{
+    width:38px;height:38px;border-radius:3px;
+    background:var(--accent);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:15px;
+  }
+  .topbar-id .name{font-weight:600; font-size:14.5px; line-height:1.3;}
+  .role-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border-radius:2px;
+    display:inline-block;
+  }
+  .role-chip.empleado{background:var(--accent-soft); color:var(--accent);}
+  .role-chip.jefe{background:var(--gold-soft); color:var(--gold);}
+  .switch-user{
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    padding:8px 14px;
+    border-radius:3px;
+    font-size:13px;
+    cursor:pointer;
+  }
+  .switch-user:hover{border-color:var(--ink-soft); color:var(--ink);}
+
+  main{max-width:1080px; margin:0 auto; padding:32px 28px 80px;}
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .section-head h2{font-size:20px; font-weight:600;}
+  .section-num{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--accent);
+    letter-spacing:.1em;
+  }
+  section.block{margin-bottom:44px;}
+
+  /* task folder cards */
+  .task-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:12px;
+  }
+  .task-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:16px 16px 14px;
+    position:relative;
+    border-top:3px solid var(--line);
+  }
+  .task-card.estado-pendiente{border-top-color:var(--ink-soft);}
+  .task-card.estado-progreso{border-top-color:var(--gold);}
+  .task-card.estado-completado{border-top-color:var(--accent);}
+  .task-card.estado-bloqueado{border-top-color:#8A4324;}
+  .overdue-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:var(--warm);
+    background:var(--warm-soft);
+    padding:2px 7px;
+    border-radius:2px;
+    margin-bottom:8px;
+  }
+  .task-card .tid{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .task-card .ttitle{font-size:14.5px; font-weight:600; margin-bottom:8px; line-height:1.35;}
+  .task-card .tmeta{font-size:12px; color:var(--ink-soft); margin-bottom:3px;}
+  .status-select{
+    margin-top:10px;
+    width:100%;
+    font-size:12.5px;
+    padding:7px 8px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .empty-note{
+    color:var(--ink-soft);
+    font-size:13.5px;
+    border:1px dashed var(--line);
+    border-radius:3px;
+    padding:18px;
+    text-align:center;
+  }
+
+  /* forms */
+  .form-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px 24px;
+  }
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .form-grid .full{grid-column:1 / -1;}
+  .form-field label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .form-field input, .form-field select{
+    width:100%;
+    padding:10px 11px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--bg);
+    font-size:14px;
+    color:var(--ink);
+    font-family:inherit;
+  }
+  .submit-btn{
+    margin-top:18px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:11px 22px;
+    border-radius:3px;
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .submit-btn:hover{background:#1c4a3e;}
+  .confirm-msg{
+    display:none;
+    margin-top:12px;
+    font-size:12.5px;
+    color:var(--accent);
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  /* dashboard (jefe) */
+  .dash-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:16px;
+  }
+  .chart-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+  }
+  .chart-card h3{font-size:13px; font-weight:600; margin-bottom:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .chart-wrap{height:220px; position:relative;}
+
+  .overdue-strip{
+    background:var(--warm-soft);
+    border:1px solid #E6BFA4;
+    border-radius:4px;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .overdue-strip .count{
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    font-weight:600;
+    color:var(--warm);
+  }
+  .overdue-strip .label{font-size:12.5px; color:#8A4324;}
+
+  /* table (jefe, todas las tareas) */
+  table.full-table{width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:4px; overflow:hidden;}
+  table.full-table th{
+    text-align:left;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-soft);
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg);
+  }
+  table.full-table td{
+    padding:10px 12px;
+    font-size:13px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  table.full-table tr:last-child td{border-bottom:none;}
+  table.full-table select{
+    font-size:12px;
+    padding:5px 6px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:var(--bg);
+  }
+  .badge{
+    display:inline-block;
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:10px;
+    font-weight:600;
+  }
+  .badge.pendiente{background:#E9EBE6; color:var(--ink-soft);}
+  .badge.progreso{background:var(--gold-soft); color:var(--gold);}
+  .badge.completado{background:var(--accent-soft); color:var(--accent);}
+  .badge.bloqueado{background:#F1DDD2; color:#8A4324;}
+
+  @media (max-width:640px){
+    .form-grid, .dash-grid{grid-template-columns:1fr;}
+    main{padding:24px 16px 60px;}
+    header.topbar{padding:14px 16px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">Capítulo 4 — conectado a tu Web App real.</div>
+
+<!-- ================= LOGIN ================= -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-eyebrow">Panel de tareas</div>
+    <h1>¿Quién sos hoy?</h1>
+    <p class="sub">Elegí tu nombre e ingresá tu PIN de 4 dígitos. El PIN evita que entres sin querer con el nombre de un compañero — no es autenticación real, solo una capa anti-error. La versión con inicio de sesión de Google queda documentada en la Plantilla ABC.</p>
+    <label class="field-label" for="userSelect">Tu nombre</label>
+    <select class="user-select" id="userSelect"></select>
+
+    <label class="field-label" for="pinInput" style="margin-top:16px;">PIN</label>
+    <div style="position:relative;">
+      <input type="password" id="pinInput" maxlength="4" inputmode="numeric" placeholder="••••"
+        class="user-select" style="letter-spacing:.35em; padding-right:52px;"
+        onkeydown="if(event.key==='Enter') document.getElementById('enterBtn').click();">
+      <button type="button" id="togglePinBtn"
+        style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--ink-soft); font-size:11px; letter-spacing:.05em; cursor:pointer; font-family:'IBM Plex Mono',monospace;">VER</button>
+    </div>
+    <p id="loginError" style="display:none; color:var(--warm); font-size:12.5px; margin-top:10px; font-family:'IBM Plex Mono',monospace;"></p>
+
+    <button class="enter-btn" id="enterBtn">Entrar al panel</button>
+    <div class="login-foot">El sistema busca tu nombre y PIN en la hoja "Usuarios" y decide automáticamente si ves el panel de Empleado o el de Jefe.</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div class="app" id="appShell">
+  <header class="topbar">
+    <div class="topbar-id">
+      <div class="avatar-tab" id="avatarInitial"></div>
+      <div>
+        <div class="name" id="currentUserName"></div>
+        <span class="role-chip" id="currentRoleChip"></span>
+      </div>
+    </div>
+    <button class="switch-user" id="switchUserBtn">Cambiar de usuario</button>
+  </header>
+
+  <main id="mainContent"></main>
+</div>
+
+<script>
+// ==================== CONEXIÓN AL WEB APP ====================
+// Pegá acá la URL que te dio "Implementar > Nueva implementación"
+// (termina en /exec).
+const API_URL = "https://script.google.com/macros/s/AKfycbxGlsz3gairHxkkO42lZTMUCl9lRkVecflQhoTnPEibYNScbntraiu4RnyhObIGlAdf/exec";
+
+async function fetchJSON(params){
+  const url = API_URL + "?" + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+
+const ESTADOS = ["Pendiente","En progreso","Completado","Bloqueado"];
+const HOY = new Date(); HOY.setHours(0,0,0,0);
+function isOverdue(t){
+  const limite = new Date(t.limite || t.fechaLimite); limite.setHours(0,0,0,0);
+  return t.estado !== "Completado" && limite < HOY;
+}
+
+let TAREAS = [];
+let USUARIOS = [];
+let currentUser = null;
+let chartsRendered = { pie:null, bar:null };
+
+// ---------------- Sesión (localStorage) ----------------
+// Nota: en el preview del artifact de Claude, localStorage no está
+// disponible y estas funciones van a fallar en silencio gracias al
+// try/catch — no rompen nada, simplemente no persiste la sesión acá.
+// En el archivo real, subido a GitHub Pages, funcionan normalmente.
+const SESSION_KEY = "capitulo4_sesion";
+function guardarSesion(nombre, rol){
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({ nombre, rol })); }
+  catch(e) {}
+}
+function cargarSesion(){
+  try {
+    const r = localStorage.getItem(SESSION_KEY);
+    return r ? JSON.parse(r) : null;
+  } catch(e) { return null; }
+}
+function borrarSesion(){
+  try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+// ---------------- Login ----------------
+const userSelect = document.getElementById("userSelect");
+
+async function cargarUsuarios(){
+  try {
+    const data = await fetchJSON({ accion: "usuarios" });
+    if(!data.ok) throw new Error(data.error || "No se pudo cargar la lista de usuarios.");
+    USUARIOS = data.datos;
+    userSelect.innerHTML = "";
+    USUARIOS.forEach(u=>{
+      const opt = document.createElement("option");
+      opt.value = u.nombre;
+      opt.textContent = u.nombre;
+      userSelect.appendChild(opt);
+    });
+  } catch(err){
+    mostrarErrorLogin("No se pudo conectar con el Web App. Revisá la URL en API_URL.");
+  }
+}
+
+document.getElementById("togglePinBtn").addEventListener("click", ()=>{
+  const pinInput = document.getElementById("pinInput");
+  const btn = document.getElementById("togglePinBtn");
+  if(pinInput.type === "password"){ pinInput.type = "text"; btn.textContent = "OCULTAR"; }
+  else { pinInput.type = "password"; btn.textContent = "VER"; }
+});
+
+function mostrarErrorLogin(msg){
+  const el = document.getElementById("loginError");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+document.getElementById("enterBtn").addEventListener("click", async ()=>{
+  const errorEl = document.getElementById("loginError");
+  errorEl.style.display = "none";
+
+  const nombre = userSelect.value;
+  const pin = document.getElementById("pinInput").value.trim();
+
+  if(!pin || pin.length !== 4){
+    mostrarErrorLogin("Ingresá tu PIN de 4 dígitos.");
+    return;
+  }
+
+  const btnEntrar = document.getElementById("enterBtn");
+  btnEntrar.disabled = true;
+  btnEntrar.textContent = "Verificando...";
+
+  try {
+    const data = await fetchJSON({ accion: "login", nombre, pin });
+    if(!data.ok){
+      mostrarErrorLogin(data.error || "Nombre o PIN incorrecto.");
+      return;
+    }
+    currentUser = data.usuario;
+    guardarSesion(currentUser.nombre, currentUser.rol);
+    document.getElementById("pinInput").value = "";
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appShell").classList.add("visible");
+    renderShell();
+  } catch(err){
+    mostrarErrorLogin("Error de conexión con el Web App.");
+  } finally {
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = "Entrar al panel";
+  }
+});
+
+document.getElementById("switchUserBtn").addEventListener("click", ()=>{
+  borrarSesion();
+  currentUser = null;
+  document.getElementById("appShell").classList.remove("visible");
+  document.getElementById("loginScreen").style.display = "flex";
+});
+
+function renderShell(){
+  document.getElementById("avatarInitial").textContent = currentUser.nombre.split(" ").map(p=>p[0]).slice(0,2).join("");
+  document.getElementById("currentUserName").textContent = currentUser.nombre;
+  const chip = document.getElementById("currentRoleChip");
+  chip.textContent = currentUser.rol;
+  chip.className = "role-chip " + (currentUser.rol === "Jefe" ? "jefe" : "empleado");
+  if(currentUser.rol === "Jefe"){ renderJefePanel(); } else { renderEmpleadoPanel(); }
+}
+
+// ---------------- Arranque: sesión guardada o pantalla de login ----------------
+(async function iniciar(){
+  await cargarUsuarios();
+  const sesion = cargarSesion();
+  if(sesion){
+    currentUser = sesion;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("appShell").classList.add("visible");
+    renderShell();
+  }
+})();
+
+// ---------------- Helpers ----------------
+function estadoClass(estado){
+  return estado.toLowerCase()==="en progreso" ? "progreso" :
+         estado.toLowerCase()==="completado" ? "completado" :
+         estado.toLowerCase()==="bloqueado" ? "bloqueado" : "pendiente";
+}
+
+// ---------------- Panel Empleado ----------------
+async function renderEmpleadoPanel(){
+  const main = document.getElementById("mainContent");
+  main.innerHTML = `<p class="empty-note">Cargando tus tareas...</p>`;
+
+  let misTareas = [];
+  try {
+    const data = await fetchJSON({ accion: "tareas", responsable: currentUser.nombre });
+    if(!data.ok) throw new Error(data.error);
+    misTareas = data.datos;
+  } catch(err){
+    main.innerHTML = `<p class="empty-note">No se pudieron cargar las tareas. Revisá la conexión con el Web App.</p>`;
+    return;
+  }
+
+  main.innerHTML = `
+    <section class="block">
+      <div class="section-head">
+        <h2>Mis tareas</h2>
+        <span class="section-num">${misTareas.length} en total</span>
+      </div>
+      <div class="task-grid" id="misTareasGrid"></div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>Cargar tarea nueva</h2></div>
+      <div class="form-card">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label for="f-tarea">Tarea</label>
+            <input type="text" id="f-tarea" placeholder="Ej: Enviar cotización a cliente">
+          </div>
+          <div class="form-field">
+            <label for="f-area">Área / Proyecto</label>
+            <input type="text" id="f-area" placeholder="Ej: Ventas">
+          </div>
+          <div class="form-field">
+            <label for="f-limite">Fecha límite</label>
+            <input type="date" id="f-limite">
+          </div>
+        </div>
+        <button class="submit-btn" id="crearTareaBtn">Guardar tarea</button>
+        <div class="confirm-msg" id="confirmEmpleado">Tarea guardada — asignada automáticamente a ${currentUser.nombre}, estado inicial "Pendiente".</div>
+      </div>
+    </section>
+  `;
+
+  paintMisTareas(misTareas);
+
+  document.getElementById("crearTareaBtn").addEventListener("click", async ()=>{
+    const tarea = document.getElementById("f-tarea").value.trim();
+    const area = document.getElementById("f-area").value.trim();
+    const limite = document.getElementById("f-limite").value;
+    if(!tarea || !area || !limite) return;
+
+    const btn = document.getElementById("crearTareaBtn");
+    btn.disabled = true; btn.textContent = "Guardando...";
+    try {
+      const data = await fetchJSON({ accion: "crearTarea", tarea, area, limite, responsable: currentUser.nombre });
+      if(!data.ok) throw new Error(data.error || "No se pudo guardar la tarea.");
+      document.getElementById("f-tarea").value=""; document.getElementById("f-area").value=""; document.getElementById("f-limite").value="";
+      document.getElementById("confirmEmpleado").style.display="block";
+      renderEmpleadoPanel(); // recarga todo el panel con datos frescos de la hoja
+    } catch(err){
+      alert(err.message || "Error al guardar la tarea.");
+    } finally {
+      btn.disabled = false; btn.textContent = "Guardar tarea";
+    }
+  });
+}
+
+function fmtFecha(fechaStr){
+  const d = new Date(fechaStr);
+  if(isNaN(d)) return fechaStr;
+  return d.toLocaleDateString("es-CR", { day:"2-digit", month:"2-digit", year:"numeric" });
+}
+
+function paintMisTareas(lista){
+  const grid = document.getElementById("misTareasGrid");
+  if(lista.length===0){
+    grid.innerHTML = `<div class="empty-note">Todavía no tenés tareas asignadas. Cargá la primera abajo.</div>`;
+    return;
+  }
+  grid.innerHTML = lista.map(t=>`
+    <div class="task-card estado-${estadoClass(t.estado)}">
+      ${t.atrasada ? '<span class="overdue-tag">Atrasada</span>' : ''}
+      <div class="tid mono">${t.id} · ${t.area}</div>
+      <div class="ttitle">${t.tarea}</div>
+      <div class="tmeta">Vence ${fmtFecha(t.fechaLimite)}</div>
+      <select class="status-select" data-id="${t.id}">
+        ${ESTADOS.map(e=>`<option value="${e}" ${e===t.estado?"selected":""}>${e}</option>`).join("")}
+      </select>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll(".status-select").forEach(sel=>{
+    sel.addEventListener("change", async (e)=>{
+      const id = e.target.dataset.id;
+      const valor = e.target.value;
+      e.target.disabled = true;
+      try {
+        const data = await fetchJSON({ accion: "actualizarTarea", id, campo: "Estado", valor });
+        if(!data.ok) throw new Error(data.error || "No se pudo actualizar el estado.");
+        renderEmpleadoPanel(); // recarga con datos frescos
+      } catch(err){
+        alert(err.message || "Error al actualizar el estado.");
+        e.target.disabled = false;
+      }
+    });
+  });
+}
+
+// ---------------- Panel Jefe ----------------
+async function renderJefePanel(){
+  const main = document.getElementById("mainContent");
+  main.innerHTML = `<p class="empty-note">Cargando el dashboard del equipo...</p>`;
+
+  try {
+    const data = await fetchJSON({ accion: "tareas" });
+    if(!data.ok) throw new Error(data.error);
+    TAREAS = data.datos;
+  } catch(err){
+    main.innerHTML = `<p class="empty-note">No se pudo cargar el dashboard. Revisá la conexión con el Web App.</p>`;
+    return;
+  }
+
+  const atrasadas = TAREAS.filter(t=>t.atrasada);
+  const empleados = USUARIOS.filter(u=>u.rol==="Empleado");
+
+  main.innerHTML = `
+    <section class="block">
+      <div class="section-head">
+        <h2>Dashboard del equipo</h2>
+        <span class="section-num">${TAREAS.length} tareas totales</span>
+      </div>
+      <div class="overdue-strip" style="margin-bottom:16px;">
+        <span class="count" id="overdueCount">${atrasadas.length}</span>
+        <span class="label" id="overdueLabel">tarea(s) atrasada(s) — ${atrasadas.map(t=>t.id).join(", ") || "ninguna"}</span>
+      </div>
+      <div class="dash-grid">
+        <div class="chart-card">
+          <h3>Tareas por estado</h3>
+          <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Carga por responsable</h3>
+          <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="section-head"><h2>Asignar tarea nueva</h2></div>
+      <div class="form-card">
+        <div class="form-grid">
+          <div class="form-field full">
+            <label for="j-tarea">Tarea</label>
+            <input type="text" id="j-tarea" placeholder="Ej: Preparar presentación trimestral">
+          </div>
+          <div class="form-field">
+            <label for="j-responsable">Responsable</label>
+            <select id="j-responsable">
+              ${empleados.map(u=>`<option value="${u.nombre}">${u.nombre}</option>`).join("")}
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="j-area">Área / Proyecto</label>
+            <input type="text" id="j-area" placeholder="Ej: Administración">
+          </div>
+          <div class="form-field">
+            <label for="j-limite">Fecha límite</label>
+            <input type="date" id="j-limite">
+          </div>
+        </div>
+        <button class="submit-btn" id="asignarBtn">Asignar tarea</button>
+        <div class="confirm-msg" id="confirmJefe">Tarea asignada correctamente.</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="section-head">
+        <h2>Todas las tareas</h2>
+        <span class="section-num">editable</span>
+      </div>
+      <table class="full-table">
+        <thead>
+          <tr><th>ID</th><th>Tarea</th><th>Responsable</th><th>Área</th><th>Vence</th><th>Estado</th></tr>
+        </thead>
+        <tbody id="fullTableBody"></tbody>
+      </table>
+    </section>
+  `;
+
+  paintFullTable();
+  paintCharts();
+
+  document.getElementById("asignarBtn").addEventListener("click", async ()=>{
+    const tarea = document.getElementById("j-tarea").value.trim();
+    const responsable = document.getElementById("j-responsable").value;
+    const area = document.getElementById("j-area").value.trim();
+    const limite = document.getElementById("j-limite").value;
+    if(!tarea || !area || !limite) return;
+
+    const btn = document.getElementById("asignarBtn");
+    btn.disabled = true; btn.textContent = "Asignando...";
+    try {
+      const data = await fetchJSON({ accion: "crearTarea", tarea, area, limite, responsable });
+      if(!data.ok) throw new Error(data.error || "No se pudo asignar la tarea.");
+      document.getElementById("j-tarea").value=""; document.getElementById("j-area").value=""; document.getElementById("j-limite").value="";
+      document.getElementById("confirmJefe").style.display="block";
+      renderJefePanel(); // recarga todo con datos frescos de la hoja
+    } catch(err){
+      alert(err.message || "Error al asignar la tarea.");
+    } finally {
+      btn.disabled = false; btn.textContent = "Asignar tarea";
+    }
+  });
+}
+
+function paintFullTable(){
+  const body = document.getElementById("fullTableBody");
+  const empleados = USUARIOS.filter(u=>u.rol==="Empleado");
+  body.innerHTML = TAREAS.map(t=>`
+    <tr>
+      <td class="mono">${t.id}</td>
+      <td>${t.tarea}</td>
+      <td>
+        <select data-field="Responsable" data-id="${t.id}">
+          ${empleados.map(u=>`<option value="${u.nombre}" ${u.nombre===t.responsable?"selected":""}>${u.nombre}</option>`).join("")}
+        </select>
+      </td>
+      <td>${t.area}</td>
+      <td>${fmtFecha(t.fechaLimite)}</td>
+      <td>
+        <select data-field="Estado" data-id="${t.id}">
+          ${ESTADOS.map(e=>`<option value="${e}" ${e===t.estado?"selected":""}>${e}</option>`).join("")}
+        </select>
+      </td>
+    </tr>
+  `).join("");
+
+  body.querySelectorAll("select").forEach(sel=>{
+    sel.addEventListener("change", async (e)=>{
+      const id = e.target.dataset.id;
+      const campo = e.target.dataset.field;
+      const valor = e.target.value;
+      e.target.disabled = true;
+      try {
+        const data = await fetchJSON({ accion: "actualizarTarea", id, campo, valor });
+        if(!data.ok) throw new Error(data.error || "No se pudo actualizar.");
+        renderJefePanel(); // recarga con datos frescos de la hoja
+      } catch(err){
+        alert(err.message || "Error al actualizar.");
+        e.target.disabled = false;
+      }
+    });
+  });
+}
+
+function paintCharts(){
+  if(typeof Chart === "undefined"){
+    document.querySelectorAll(".chart-wrap").forEach(w=>{
+      w.innerHTML = '<p style="font-size:12.5px;color:var(--warm);padding:12px;">No se pudo cargar Chart.js desde el CDN. Revisá la conexión o recargá la página.</p>';
+    });
+    return;
+  }
+  const porEstado = {};
+  ESTADOS.forEach(e=>porEstado[e]=0);
+  TAREAS.forEach(t=>porEstado[t.estado] = (porEstado[t.estado]||0)+1);
+
+  const porResponsable = {};
+  TAREAS.forEach(t=>porResponsable[t.responsable] = (porResponsable[t.responsable]||0)+1);
+
+  const inkSoft = "#5B6A62", accent="#245C4D", gold="#B08B2E", warm="#C65A2E";
+
+  if(chartsRendered.pie) chartsRendered.pie.destroy();
+  chartsRendered.pie = new Chart(document.getElementById("pieChart"), {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(porEstado),
+      datasets: [{ data: Object.values(porEstado), backgroundColor:[inkSoft, gold, accent, warm], borderWidth:0 }]
+    },
+    options: { plugins:{ legend:{ position:"bottom", labels:{ font:{family:"Inter", size:11}, boxWidth:10 } } }, maintainAspectRatio:false }
+  });
+
+  if(chartsRendered.bar) chartsRendered.bar.destroy();
+  chartsRendered.bar = new Chart(document.getElementById("barChart"), {
+    type:"bar",
+    data:{
+      labels: Object.keys(porResponsable),
+      datasets:[{ data: Object.values(porResponsable), backgroundColor: accent, borderRadius:3, maxBarThickness:36 }]
+    },
+    options:{
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1, font:{family:"Inter", size:11} } }, x:{ ticks:{ font:{family:"Inter", size:11} } } },
+      maintainAspectRatio:false
+    }
+  });
+}
+</script>
+</body>
+</html>
