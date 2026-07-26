@@ -351,6 +351,20 @@
 
   /* table (jefe, todas las tareas) */
   table.full-table{width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:4px; overflow:hidden;}
+  .area-group{margin-bottom:24px;}
+  .area-group:last-child{margin-bottom:0;}
+  .area-heading{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .area-heading .n{color:var(--accent);}
   table.full-table th{
     text-align:left;
     font-size:10.5px;
@@ -628,7 +642,7 @@ async function renderEmpleadoPanel(){
     misTareas = dataTareas.datos;
     areas = dataAreas.ok ? dataAreas.datos : [];
   } catch(err){
-    main.innerHTML = `<p class="empty-note">No se pudieron cargar las tareas. Revisá la conexión con el Web App.</p>`;
+    main.innerHTML = `<p class="empty-note">Error al cargar tus tareas: ${err.message}</p>`;
     return;
   }
 
@@ -746,7 +760,7 @@ async function renderJefePanel(){
     TAREAS = data.datos;
     areas = dataAreas.ok ? dataAreas.datos : [];
   } catch(err){
-    main.innerHTML = `<p class="empty-note">No se pudo cargar el dashboard. Revisá la conexión con el Web App.</p>`;
+    main.innerHTML = `<p class="empty-note">Error al cargar el dashboard: ${err.message}</p>`;
     return;
   }
 
@@ -807,14 +821,9 @@ async function renderJefePanel(){
     <section class="block">
       <div class="section-head">
         <h2>Todas las tareas</h2>
-        <span class="section-num">editable</span>
+        <span class="section-num">agrupadas por área</span>
       </div>
-      <table class="full-table">
-        <thead>
-          <tr><th>ID</th><th>Tarea</th><th>Responsable</th><th>Área</th><th>Vence</th><th>Estado</th></tr>
-        </thead>
-        <tbody id="fullTableBody"></tbody>
-      </table>
+      <div id="allTasksContainer"></div>
     </section>
   `;
 
@@ -845,29 +854,62 @@ async function renderJefePanel(){
   });
 }
 
-function paintFullTable(){
-  const body = document.getElementById("fullTableBody");
-  const empleados = USUARIOS.filter(u=>u.rol==="Empleado");
-  body.innerHTML = TAREAS.map(t=>`
-    <tr>
-      <td class="mono">${t.id}</td>
-      <td>${t.tarea}</td>
-      <td>
-        <select data-field="Responsable" data-id="${t.id}">
-          ${empleados.map(u=>`<option value="${u.nombre}" ${u.nombre===t.responsable?"selected":""}>${u.nombre}</option>`).join("")}
-        </select>
-      </td>
-      <td>${t.area}</td>
-      <td>${fmtFecha(t.fechaLimite)}</td>
-      <td>
-        <select data-field="Estado" data-id="${t.id}">
-          ${ESTADOS.map(e=>`<option value="${e}" ${e===t.estado?"selected":""}>${e}</option>`).join("")}
-        </select>
-      </td>
-    </tr>
-  `).join("");
+const ORDEN_ESTADO = { "Pendiente": 0, "En progreso": 1, "Bloqueado": 2, "Completado": 3 };
 
-  body.querySelectorAll("select").forEach(sel=>{
+function ordenarTareas(lista){
+  return [...lista].sort((a, b) => {
+    if (a.atrasada !== b.atrasada) return a.atrasada ? -1 : 1; // atrasadas primero
+    return (ORDEN_ESTADO[a.estado] ?? 99) - (ORDEN_ESTADO[b.estado] ?? 99);
+  });
+}
+
+function paintFullTable(){
+  const cont = document.getElementById("allTasksContainer");
+  const empleados = USUARIOS.filter(u=>u.rol==="Empleado");
+
+  // Agrupar por área
+  const grupos = {};
+  TAREAS.forEach(t=>{
+    const area = t.area || "(sin área)";
+    if(!grupos[area]) grupos[area] = [];
+    grupos[area].push(t);
+  });
+  const areasOrdenadas = Object.keys(grupos).sort((a,b)=>a.localeCompare(b,"es"));
+
+  cont.innerHTML = areasOrdenadas.map(area=>{
+    const tareasArea = ordenarTareas(grupos[area]);
+    const filas = tareasArea.map(t=>`
+      <tr>
+        <td class="mono">${t.id}${t.atrasada ? ' <span class="overdue-tag" style="margin:0;">Atrasada</span>' : ''}</td>
+        <td>${t.tarea}</td>
+        <td>
+          <select data-field="Responsable" data-id="${t.id}">
+            ${empleados.map(u=>`<option value="${u.nombre}" ${u.nombre===t.responsable?"selected":""}>${u.nombre}</option>`).join("")}
+          </select>
+        </td>
+        <td>${fmtFecha(t.fechaLimite)}</td>
+        <td>
+          <select data-field="Estado" data-id="${t.id}">
+            ${ESTADOS.map(e=>`<option value="${e}" ${e===t.estado?"selected":""}>${e}</option>`).join("")}
+          </select>
+        </td>
+      </tr>
+    `).join("");
+
+    return `
+      <div class="area-group">
+        <div class="area-heading">${area} <span class="n">· ${tareasArea.length}</span></div>
+        <table class="full-table">
+          <thead>
+            <tr><th>ID</th><th>Tarea</th><th>Responsable</th><th>Vence</th><th>Estado</th></tr>
+          </thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>
+    `;
+  }).join("");
+
+  cont.querySelectorAll("select").forEach(sel=>{
     sel.addEventListener("change", async (e)=>{
       const id = e.target.dataset.id;
       const campo = e.target.dataset.field;
